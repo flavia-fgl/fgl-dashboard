@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FGL Advisory — Launch Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;background:#f5f5f3;color:#1a1a1a;min-height:100vh}
+.app{max-width:1200px;margin:0 auto;padding:24px 20px 60px}
+
+.dash-header{padding:0 0 18px;border-bottom:1px solid #e0ddd6;margin-bottom:18px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.dash-logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:38px;height:38px;background:#4A6741;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
+.dash-title{font-size:19px;font-weight:600}
+.dash-sub{font-size:12px;color:#888;margin-top:2px}
+.dash-right{text-align:right}
+.dash-date{font-size:12px;color:#888}
+.reset-btn{margin-top:6px;font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;color:#888;font-family:inherit;transition:all .15s}
+.reset-btn:hover{border-color:#C0392B;color:#C0392B}
+
+.launch-banner{background:#f0f7ee;border:1px solid #b8d4b0;border-radius:10px;padding:11px 16px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.lb-block{display:flex;flex-direction:column}
+.lb-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#5a8a52;margin-bottom:2px}
+.lb-val{font-size:16px;font-weight:700;color:#4A6741}
+.lb-div{width:1px;height:32px;background:#b8d4b0}
+
+.stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px}
+.stat{background:#fff;border-radius:10px;padding:11px 13px;border:1px solid #e8e5de}
+.stat-lbl{font-size:10px;color:#999;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em}
+.stat-val{font-size:20px;font-weight:600;color:#1a1a1a}
+.stat-val.green{color:#4A6741}
+.stat-val.red{color:#C0392B}
+.stat-val.amber{color:#854F0B}
+.stat-val.sm{font-size:13px;margin-top:2px;line-height:1.4}
+
+.prog-wrap{margin-bottom:16px;background:#fff;border-radius:10px;padding:12px 16px;border:1px solid #e8e5de}
+.prog-row{display:flex;justify-content:space-between;font-size:12px;color:#888;margin-bottom:7px}
+.prog-track{height:6px;background:#f0ede6;border-radius:4px;overflow:hidden;margin-bottom:8px}
+.prog-fill{height:100%;background:#4A6741;border-radius:4px;transition:width .4s ease}
+.phase-bars{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.pb-wrap{display:flex;flex-direction:column;align-items:center;gap:3px}
+.pb-track{width:100%;height:4px;background:#f0ede6;border-radius:2px;overflow:hidden}
+.pb-fill{height:100%;border-radius:2px;transition:width .3s}
+.pb-lbl{font-size:9px;color:#bbb;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}
+
+.tabs{display:flex;gap:0;border-bottom:1px solid #e0ddd6;margin-bottom:18px}
+.tab{font-size:13px;padding:8px 16px;cursor:pointer;color:#888;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;transition:all .15s;font-family:inherit}
+.tab.active{color:#1a1a1a;font-weight:600;border-bottom-color:#4A6741}
+.tab:hover:not(.active){color:#555}
+
+.section{display:none}
+.section.active{display:block}
+
+.legend-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;font-size:11px;color:#666;align-items:center}
+.lsq{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:3px;vertical-align:middle}
+
+/* GANTT */
+.gantt-scroll{overflow-x:auto;border-radius:10px;border:1px solid #e8e5de;background:#fff}
+.gtbl{width:100%;border-collapse:collapse;min-width:860px}
+.gtbl thead th{font-size:10px;font-weight:600;color:#999;text-align:left;padding:9px 7px;border-bottom:1px solid #e8e5de;white-space:nowrap;background:#fafaf8;text-transform:uppercase;letter-spacing:.04em}
+.gtbl thead th.wk{text-align:center;border-left:1px solid #eee;min-width:60px}
+.gtbl tbody td{padding:3px 7px;border-bottom:1px solid #f2f0eb;vertical-align:middle}
+.gtbl tbody tr:last-child td{border-bottom:none}
+.gtbl tbody tr:hover:not(.ph-row) td{background:#fafaf8;cursor:pointer}
+.gtbl tbody tr.ph-row td{background:#f2f0eb;padding:7px 8px 3px;border-bottom:1px solid #ddd;cursor:default}
+.gtbl tbody tr.ph-row:hover td{background:#f2f0eb}
+.t-label{font-size:11px;color:#1a1a1a;white-space:nowrap;max-width:195px;overflow:hidden;text-overflow:ellipsis}
+.t-label.done{text-decoration:line-through;color:#c0bdb6}
+.t-id-cell{font-size:10px;color:#ccc;font-family:monospace;min-width:28px}
+.gbar-cell{position:relative;height:24px}
+.gbar{position:absolute;top:4px;height:16px;border-radius:3px}
+.gbar.cp{background:#C0392B}
+.gbar.std{background:#4A6741}
+.gbar.dn{background:#27AE60;opacity:.75}
+.tday{position:absolute;top:0;bottom:0;width:2px;background:#E24B4A;z-index:5;pointer-events:none}
+.lday{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed #854F0B;z-index:4;pointer-events:none}
+.chkb{width:15px;height:15px;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;border:1.5px solid #ccc;background:#fff;flex-shrink:0;transition:all .15s}
+.chkb.on{background:#4A6741;border-color:#4A6741}
+.ph-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;color:#fff;letter-spacing:.04em}
+
+/* TASK TRACKER */
+.filter-bar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.fbtn{font-size:11px;padding:4px 11px;border:1px solid #ddd;border-radius:99px;background:#fff;cursor:pointer;color:#888;transition:all .15s;font-family:inherit}
+.fbtn.active{background:#4A6741;color:#fff;border-color:#4A6741}
+.fbtn:hover:not(.active){border-color:#aaa;color:#555}
+.ph-group{margin-bottom:18px}
+.phg-hdr{display:flex;align-items:center;gap:8px;padding:8px 0 5px;border-bottom:1px solid #e8e5de;margin-bottom:7px}
+.phg-pill{font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;color:#fff;letter-spacing:.03em}
+.phg-dates{font-size:11px;color:#aaa}
+.phg-prog{font-size:11px;color:#999;margin-left:auto}
+.phg-cp{font-size:10px;color:#C0392B;font-weight:600;margin-left:6px}
+.ti{display:flex;align-items:flex-start;gap:7px;padding:9px 11px;background:#fff;border:1px solid #e8e5de;border-radius:9px;cursor:pointer;transition:all .15s;margin-bottom:5px}
+.ti:hover{border-color:#bbb}
+.ti.done{opacity:.5}
+.ti.cp-task{border-left:3px solid #C0392B}
+.ti.new-task{border-left:3px solid #E67E22}
+.t-chk{width:17px;height:17px;border:1.5px solid #ccc;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;background:#fff;transition:all .15s}
+.ti.done .t-chk{background:#4A6741;border-color:#4A6741}
+.tbdy{flex:1;min-width:0}
+.tname{font-size:12px;line-height:1.5;color:#1a1a1a}
+.ti.done .tname{text-decoration:line-through;color:#bbb}
+.tmeta{display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap}
+.tid{font-size:10px;color:#ccc;font-family:monospace}
+.tnote{font-size:10px;color:#bbb}
+.cpb{font-size:9px;padding:1px 5px;border-radius:3px;background:#FCEBEB;color:#A32D2D;font-weight:600}
+.newb{font-size:9px;padding:1px 5px;border-radius:3px;background:#FAEEDA;color:#7a4500;font-weight:500}
+.mergedb{font-size:9px;padding:1px 5px;border-radius:3px;background:#EAF3DE;color:#2d5a1f;font-weight:500}
+
+/* BUDGET */
+.budget-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.budget-card{background:#fff;border:1px solid #e8e5de;border-radius:10px;overflow:hidden}
+.bc-header{padding:12px 16px;border-bottom:1px solid #e8e5de;display:flex;align-items:center;justify-content:space-between}
+.bc-title{font-size:13px;font-weight:600}
+.bc-total{font-size:13px;font-weight:600;color:#4A6741}
+.bc-total.over{color:#C0392B}
+.budget-table{width:100%;border-collapse:collapse}
+.budget-table td{padding:8px 16px;border-bottom:1px solid #f2f0eb;font-size:12px;vertical-align:middle}
+.budget-table tr:last-child td{border-bottom:none}
+.budget-table .item-name{color:#1a1a1a}
+.budget-table .item-vendor{font-size:10px;color:#aaa}
+.budget-table .proj{color:#888;text-align:right}
+.budget-table .actual-cell{text-align:right}
+.budget-table .status-cell{text-align:center}
+.actual-input{width:80px;border:1px solid #e8e5de;border-radius:5px;padding:3px 7px;font-size:12px;text-align:right;font-family:inherit;background:#fafaf8;transition:border .15s}
+.actual-input:focus{outline:none;border-color:#4A6741;background:#fff}
+.status-select{border:1px solid #e8e5de;border-radius:5px;padding:3px 6px;font-size:11px;font-family:inherit;background:#fafaf8;cursor:pointer;transition:border .15s}
+.status-select:focus{outline:none;border-color:#4A6741}
+.status-paid{color:#27AE60;font-weight:600}
+.status-pending{color:#E67E22}
+.status-na{color:#bbb}
+.budget-summary{background:#fff;border:1px solid #e8e5de;border-radius:10px;padding:16px;margin-bottom:16px}
+.bs-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.bs-item{text-align:center;padding:10px;background:#f7f5f0;border-radius:8px}
+.bs-lbl{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.bs-val{font-size:18px;font-weight:600}
+.bs-sub{font-size:10px;color:#aaa;margin-top:2px}
+.add-item-row{padding:8px 16px;border-top:1px solid #f2f0eb;display:flex;gap:6px;align-items:center}
+.add-input{flex:1;border:1px solid #e8e5de;border-radius:5px;padding:4px 8px;font-size:12px;font-family:inherit;background:#fff}
+.add-input:focus{outline:none;border-color:#4A6741}
+.add-btn{font-size:11px;padding:4px 10px;border:1px solid #4A6741;border-radius:5px;background:#4A6741;color:#fff;cursor:pointer;font-family:inherit;white-space:nowrap}
+.add-btn:hover{background:#3a5232}
+.del-btn{font-size:10px;color:#ddd;cursor:pointer;background:none;border:none;padding:0 2px;line-height:1;font-family:inherit}
+.del-btn:hover{color:#C0392B}
+
+/* PROGRESS TRACKER */
+.progress-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.prog-card{background:#fff;border:1px solid #e8e5de;border-radius:10px;overflow:hidden}
+.pc-header{padding:12px 16px;border-bottom:1px solid #e8e5de;font-size:13px;font-weight:600}
+.phase-progress-list{padding:12px 16px;display:flex;flex-direction:column;gap:12px}
+.ppl-item{}
+.ppl-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.ppl-name{font-size:12px;color:#1a1a1a;font-weight:500;display:flex;align-items:center;gap:6px}
+.ppl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ppl-count{font-size:11px;color:#999}
+.ppl-track{height:5px;background:#f0ede6;border-radius:3px;overflow:hidden}
+.ppl-fill{height:100%;border-radius:3px;transition:width .4s}
+.ppl-pct{font-size:10px;color:#aaa;margin-top:2px;text-align:right}
+
+.timeline-card{background:#fff;border:1px solid #e8e5de;border-radius:10px;overflow:hidden;margin-bottom:16px}
+.tc-header{padding:12px 16px;border-bottom:1px solid #e8e5de;font-size:13px;font-weight:600}
+.week-timeline{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.wt-row{display:flex;align-items:center;gap:10px}
+.wt-label{font-size:11px;color:#888;min-width:90px;flex-shrink:0}
+.wt-bar-wrap{flex:1;position:relative}
+.wt-track{height:8px;background:#f0ede6;border-radius:4px;overflow:hidden}
+.wt-fill{height:100%;background:#4A6741;border-radius:4px;transition:width .4s}
+.wt-fill.cp{background:#C0392B}
+.wt-count{font-size:10px;color:#aaa;min-width:50px;text-align:right}
+.wt-week-label{font-size:10px;color:#bbb;min-width:60px;text-align:right}
+
+.critical-list{padding:12px 16px;display:flex;flex-direction:column;gap:5px}
+.cl-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;border:1px solid #f2f0eb}
+.cl-item.done{opacity:.5;background:#f9f9f7}
+.cl-item.done .cl-name{text-decoration:line-through;color:#bbb}
+.cl-dot{width:8px;height:8px;border-radius:50%;background:#C0392B;flex-shrink:0}
+.cl-dot.done-dot{background:#27AE60}
+.cl-name{font-size:11px;color:#1a1a1a;flex:1}
+.cl-id{font-size:10px;color:#ddd;font-family:monospace}
+.cl-phase{font-size:10px;padding:1px 6px;border-radius:3px;color:#fff;flex-shrink:0}
+
+.save-ind{position:fixed;bottom:20px;right:20px;background:#4A6741;color:#fff;font-size:11px;padding:6px 14px;border-radius:99px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+.save-ind.show{opacity:1}
+
+@media(max-width:700px){
+  .stats-row{grid-template-columns:repeat(3,1fr)}
+  .budget-grid,.progress-grid{grid-template-columns:1fr}
+  .bs-row{grid-template-columns:repeat(2,1fr)}
+  .app{padding:14px 12px 40px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="dash-header">
+  <div class="dash-logo">
+    <div class="logo-mark">FGL</div>
+    <div>
+      <div class="dash-title">FGL Advisory — launch dashboard</div>
+      <div class="dash-sub">Kickoff Apr 20 · Target launch Jun 1, 2026 · 42 days · 8 phases · v4.2</div>
+    </div>
+  </div>
+  <div class="dash-right">
+    <div class="dash-date" id="today-lbl"></div>
+    <button class="reset-btn" onclick="resetAll()">Reset all tasks</button>
+  </div>
+</div>
+
+<div class="launch-banner">
+  <div class="lb-block"><div class="lb-lbl">Kickoff</div><div class="lb-val">Apr 20, 2026</div></div>
+  <div class="lb-div"></div>
+  <div class="lb-block"><div class="lb-lbl">Launch date</div><div class="lb-val">Jun 1, 2026</div></div>
+  <div class="lb-div"></div>
+  <div class="lb-block"><div class="lb-lbl">Days remaining</div><div class="lb-val" id="days-left">—</div></div>
+  <div class="lb-div"></div>
+  <div class="lb-block"><div class="lb-lbl">Tasks complete</div><div class="lb-val" id="pct-banner">0%</div></div>
+  <div class="lb-div"></div>
+  <div class="lb-block"><div class="lb-lbl">Critical path</div><div class="lb-val" id="cp-banner">0/0</div></div>
+  <div class="lb-div"></div>
+  <div class="lb-block"><div class="lb-lbl">Budget spent</div><div class="lb-val" id="budget-banner">$0</div></div>
+</div>
+
+<div class="stats-row">
+  <div class="stat"><div class="stat-lbl">Total tasks</div><div class="stat-val" id="s-total">—</div></div>
+  <div class="stat"><div class="stat-lbl">Complete</div><div class="stat-val green" id="s-done">0</div></div>
+  <div class="stat"><div class="stat-lbl">Remaining</div><div class="stat-val" id="s-rem">—</div></div>
+  <div class="stat"><div class="stat-lbl">Critical done</div><div class="stat-val red" id="s-crit">—</div></div>
+  <div class="stat"><div class="stat-lbl">Current phase</div><div class="stat-val sm" id="s-phase">—</div></div>
+  <div class="stat"><div class="stat-lbl">Budget remaining</div><div class="stat-val sm green" id="s-budget-rem">—</div></div>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog-row"><span id="prog-txt">0 of 0 tasks complete</span><span id="prog-pct" style="font-weight:600;color:#4A6741">0%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="phase-bars" id="phase-bars"></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('gantt',this)">Gantt chart</button>
+  <button class="tab" onclick="switchTab('tasks',this)">Task tracker</button>
+  <button class="tab" onclick="switchTab('budget',this)">Budget & costs</button>
+  <button class="tab" onclick="switchTab('progress',this)">Progress tracker</button>
+</div>
+
+<!-- GANTT -->
+<div id="sec-gantt" class="section active">
+  <div class="legend-row">
+    <span><span class="lsq" style="background:#C0392B"></span>Critical path</span>
+    <span><span class="lsq" style="background:#4A6741"></span>Standard task</span>
+    <span><span class="lsq" style="background:#27AE60"></span>Complete</span>
+    <span><span style="display:inline-block;width:2px;height:12px;background:#E24B4A;vertical-align:middle;margin-right:3px"></span>Today</span>
+    <span><span style="display:inline-block;width:0;height:12px;border-left:2px dashed #854F0B;vertical-align:middle;margin-right:3px"></span>Jun 1 launch</span>
+    <span style="color:#bbb;font-size:10px">Click any row to mark complete</span>
+  </div>
+  <div class="gantt-scroll">
+    <table class="gtbl">
+      <thead><tr>
+        <th style="width:24px"></th>
+        <th style="width:30px">ID</th>
+        <th style="width:200px">Task</th>
+        <th style="width:34px;text-align:center">Days</th>
+        <th class="wk">Wk 1<div style="font-weight:400;font-size:9px">Apr 20</div></th>
+        <th class="wk">Wk 2<div style="font-weight:400;font-size:9px">Apr 27</div></th>
+        <th class="wk">Wk 3<div style="font-weight:400;font-size:9px">May 4</div></th>
+        <th class="wk">Wk 4<div style="font-weight:400;font-size:9px">May 11</div></th>
+        <th class="wk">Wk 5<div style="font-weight:400;font-size:9px">May 18</div></th>
+        <th class="wk">Wk 6<div style="font-weight:400;font-size:9px">May 25</div></th>
+        <th class="wk">Jun 1+<div style="font-weight:400;font-size:9px">Launch</div></th>
+      </tr></thead>
+      <tbody id="gantt-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- TASKS -->
+<div id="sec-tasks" class="section">
+  <div class="filter-bar" id="filter-bar"></div>
+  <div class="legend-row">
+    <span><span style="display:inline-block;width:3px;height:14px;background:#C0392B;border-radius:1px;margin-right:4px;vertical-align:middle"></span>Critical path</span>
+    <span><span style="display:inline-block;width:3px;height:14px;background:#E67E22;border-radius:1px;margin-right:4px;vertical-align:middle"></span>New/optimized</span>
+    <span><span class="lsq" style="background:#EAF3DE;border:1px solid #b8d4b0"></span>Merged</span>
+  </div>
+  <div id="task-list"></div>
+</div>
+
+<!-- BUDGET -->
+<div id="sec-budget" class="section">
+  <div class="budget-summary">
+    <div class="bs-row">
+      <div class="bs-item">
+        <div class="bs-lbl">Setup budget</div>
+        <div class="bs-val" id="b-setup-proj">$0</div>
+        <div class="bs-sub">projected</div>
+      </div>
+      <div class="bs-item">
+        <div class="bs-lbl">Setup spent</div>
+        <div class="bs-val green" id="b-setup-actual">$0</div>
+        <div class="bs-sub">actual to date</div>
+      </div>
+      <div class="bs-item">
+        <div class="bs-lbl">Monthly expenses</div>
+        <div class="bs-val amber" id="b-monthly">$0</div>
+        <div class="bs-sub">per month</div>
+      </div>
+      <div class="bs-item">
+        <div class="bs-lbl">3-month burn</div>
+        <div class="bs-val red" id="b-burn">$0</div>
+        <div class="bs-sub">setup + 3 months ops</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="budget-grid">
+    <!-- SETUP COSTS -->
+    <div class="budget-card">
+      <div class="bc-header">
+        <span class="bc-title">Setup costs (one-time)</span>
+        <span class="bc-total" id="setup-total-hdr">$0 projected · $0 spent</span>
+      </div>
+      <table class="budget-table" id="setup-table">
+        <thead>
+          <tr style="background:#fafaf8">
+            <td style="font-size:10px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Item</td>
+            <td style="font-size:10px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.04em;text-align:right">Projected</td>
+            <td style="font-size:10px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.04em;text-align:right">Actual</td>
+            <td style="font-size:10px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.04em;text-align:center">Status</td>
+            <td style="width:20px"></td>
+          </tr>
+        </thead>
+        <tbody id="setup-body"></tbody>
+      </table>
+      <div class="add-item-row">
+        <input class="add-input" id="setup-name" placeholder="Item name" />
+        <input class="add-input" id="setup-proj" placeholder="$" style="width:70px;flex:none" />
+        <button class="add-btn" onclick="addSetupItem()">+ Add</button>
+      </div>
+    </div>
+
+    <!-- MONTHLY COSTS -->
+    <div class="budget-card">
+      <div class="bc-header">
+        <span class="bc-title">Monthly operating expenses</span>
+        <span class="bc-total" id="monthly-total-hdr">$0/mo</span>
+      </div>
+      <table class="budget-table" id="monthly-table">
+        <thead>
+          <tr style="background:#fafaf8">
+            <td style="font-size:10px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Item</td>
+            <td style="font-size:10px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Vendor</td>
+            <td style="font-size:10px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.04em;text-align:right">$/mo</td>
+            <td style="font-size:10px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.04em;text-align:right">Actual</td>
+            <td style="font-size:10px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.04em;text-align:center">Status</td>
+            <td style="width:20px"></td>
+          </tr>
+        </thead>
+        <tbody id="monthly-body"></tbody>
+      </table>
+      <div class="add-item-row">
+        <input class="add-input" id="monthly-name" placeholder="Item name" />
+        <input class="add-input" id="monthly-vendor" placeholder="Vendor" style="width:90px;flex:none" />
+        <input class="add-input" id="monthly-proj" placeholder="$/mo" style="width:60px;flex:none" />
+        <button class="add-btn" onclick="addMonthlyItem()">+ Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS TRACKER -->
+<div id="sec-progress" class="section">
+  <div class="progress-grid">
+    <!-- PHASE PROGRESS -->
+    <div class="prog-card">
+      <div class="pc-header">Progress by phase</div>
+      <div class="phase-progress-list" id="phase-progress-list"></div>
+    </div>
+
+    <!-- WEEKLY BREAKDOWN -->
+    <div class="prog-card">
+      <div class="pc-header">Tasks by week</div>
+      <div class="week-timeline" id="week-timeline"></div>
+    </div>
+  </div>
+
+  <!-- CRITICAL PATH TRACKER -->
+  <div class="timeline-card">
+    <div class="pc-header">Critical path tracker — <span style="font-weight:400;font-size:12px;color:#888">these must be complete by June 1</span></div>
+    <div class="critical-list" id="critical-list"></div>
+  </div>
+</div>
+
+</div>
+<div class="save-ind" id="save-ind">Saved</div>
+
+<script>
+const STORAGE_KEY = 'fgl_v4_2';
+const START  = new Date('2026-04-20');
+const LAUNCH = new Date('2026-06-01');
+const TOTAL  = 42;
+const TODAY  = new Date();
+
+const PC = {
+  'Foundation':'#4A6741','Business Set-Up':'#185FA5','Operations':'#854F0B',
+  'Branding':'#993556','Sales & Marketing':'#534AB7','GTM & Outreach':'#0F6E56',
+  'Business Dev':'#712B13','Conversion':'#3C3489'
+};
+
+const phases = [
+  { name:'Foundation', dates:'Apr 20–24', tasks:[
+    {id:'1.1',name:'Define business model, service lines & ICP',day:0,dur:2,cp:true,tag:'',note:'Convert business plan into 1-page internal brief — service lines, ICP, and positioning'},
+    {id:'1.2',name:'Define pricing structure for all 5 tiers',day:2,dur:2,cp:true,tag:'',note:'Complete Tiers 3–5 flagged as incomplete in business plan — lock pricing before outreach'},
+    {id:'1.3',name:'Define service delivery terms & scope',day:4,dur:1,cp:false,tag:'',note:'Engagement terms, boundaries, revision limits, and timelines per tier'},
+  ]},
+  { name:'Business Set-Up', dates:'Apr 20–28', tasks:[
+    {id:'2.1',name:'Confirm & reserve business name (CA SOS)',day:0,dur:1,cp:true,tag:'',note:'Check bizfile.sos.ca.gov — confirm domain availability simultaneously'},
+    {id:'2.2',name:'Register LLC and apply for EIN',day:1,dur:3,cp:true,tag:'merged',note:'File LLC with CA SOS (~$70) + instant IRS EIN online — do both same week'},
+    {id:'2.3',name:'Open business bank account',day:4,dur:1,cp:true,tag:'',note:'Mercury (no fees) or Chase Business — requires EIN; keep personal finances separate'},
+    {id:'2.4',name:'Obtain E&O + general liability insurance',day:1,dur:3,cp:false,tag:'new',note:'~$120/mo each — Hiscox or Next Insurance; bind before first client engagement'},
+    {id:'2.5',name:'Register with city / local municipality',day:2,dur:2,cp:false,tag:'',note:'Pinole/East Bay city business license — ~$50–150/yr; check local requirements'},
+  ]},
+  { name:'Operations', dates:'Apr 24 – May 2', tasks:[
+    {id:'3.1',name:'Set up Google Workspace, Zoom & Calendly',day:4,dur:1,cp:false,tag:'',note:'hello@fgladvisory.com live day one; 30-min "Strategy Conversation" Calendly link'},
+    {id:'3.2',name:'Set up accounting system (Collective)',day:5,dur:1,cp:false,tag:'',note:'~$350/mo — track billable hours and CA tax from month one'},
+    {id:'3.3',name:'Set up DocuSign + CRM pipeline tracker',day:5,dur:1,cp:false,tag:'merged',note:'DocuSign ~$25/mo; HubSpot free CRM — stages: Target → Contacted → Call → Proposal → Closed'},
+    {id:'3.4',name:'Create MSA, contract & NDA templates',day:5,dur:3,cp:true,tag:'',note:'~$600 CA employment attorney — required before any engagement; include scope + IP clauses'},
+    {id:'3.5',name:'Create proposal + invoicing templates',day:7,dur:2,cp:false,tag:'merged',note:'Tier 1–5 proposal with scope, timeline, investment; Net-15 invoice template'},
+    {id:'3.6',name:'Create service delivery workflow',day:7,dur:2,cp:false,tag:'',note:'Discovery → assessment → roadmap → implementation → review — repeatable process doc'},
+    {id:'3.7',name:'Create email & follow-up cadence templates',day:9,dur:1,cp:false,tag:'',note:'Post-call, post-proposal, 3-day follow-up, referral ask, check-in templates'},
+    {id:'3.8',name:'Build HR templates library',day:5,dur:4,cp:false,tag:'',note:'Handbook, onboarding, performance review, JD, compensation — core Tier 1 deliverable'},
+    {id:'3.9',name:'Build Tiers 1–5 SOW templates',day:7,dur:4,cp:true,tag:'new',note:'Scope-of-work docs for each tier — Tiers 3–5 flagged as missing in business plan'},
+    {id:'3.10',name:'Create discovery call framework & intake form',day:9,dur:2,cp:true,tag:'new',note:'Send intake form before every call; interview guide captures size, stage, people challenges'},
+    {id:'3.11',name:'Build referral partner network',day:5,dur:4,cp:false,tag:'',note:'Employment attorneys, CPAs, recruiters, startup advisors who serve your ICP'},
+    {id:'3.12',name:'Sign up: Google Workspace & activate FGL email',day:0,dur:1,cp:true,tag:'new',note:'Business Starter $7/mo — set up fla@fgladvisory.com, Drive folders, Calendar, Meet'},
+    {id:'3.13',name:'Sign up: Notion & NotebookLM',day:1,dur:1,cp:false,tag:'new',note:'Notion free to start — create 3 folders (FGL Internal, Clients, Templates). NotebookLM: upload frameworks + IP'},
+    {id:'3.14',name:'Sign up: Claude Pro',day:0,dur:1,cp:false,tag:'new',note:'$20/mo — set up Projects for FGL. Primary AI for writing, strategy, research, and SOPs'},
+    {id:'3.15',name:'Sign up: LinkedIn Premium Business',day:1,dur:1,cp:true,tag:'new',note:'~$40/mo annual — optimize profile, add capabilities PDF, set up InMail cadence for outreach'},
+    {id:'3.16',name:'Purchase Things 3 & set up daily task system',day:1,dur:1,cp:false,tag:'new',note:'$49.99 one-time Mac purchase — set up Today, Upcoming, and FGL Launch project'},
+    {id:'3.17',name:'Sign up: Blinq digital business card',day:2,dur:1,cp:false,tag:'new',note:'Free (2 cards) — create FGL card with email, Calendly link, and LinkedIn. Share via QR'},
+    {id:'3.18',name:'Sign up: Canva (design system)',day:2,dur:1,cp:false,tag:'new',note:'Free to start → Pro $15/mo — set up brand colors, upload logo, create FGL template kit'},
+    {id:'3.19',name:'Sign up: Fathom (meeting notetaker)',day:3,dur:1,cp:false,tag:'new',note:'Free tier first (5 AI summaries/mo) — install Zoom + Meet extension. Upgrade to $16/mo when active'},
+    {id:'3.20',name:'Sign up: Otter.ai (in-person transcription)',day:3,dur:1,cp:false,tag:'new',note:'$8/mo Pro annual — for in-person meetings, phone calls, and audio file transcription'},
+    {id:'3.21',name:'Sign up: Wave (accounting)',day:3,dur:1,cp:false,tag:'new',note:'Free — connect business bank account, set up income/expense categories from day one'},
+    {id:'3.22',name:'Sign up: HoneyBook (client management)',day:5,dur:1,cp:true,tag:'new',note:'$29/mo annual — set up proposal template, contract, invoice, and client portal before first outreach'},
+    {id:'3.23',name:'Sign up: Calendly (scheduling)',day:4,dur:1,cp:false,tag:'new',note:'$10/mo Standard — create 30-min Discovery Call event type, embed in email signature and website'},
+    {id:'3.24',name:'Set up professional email signature',day:2,dur:1,cp:false,tag:'new',note:'Gmail signature: Name · FGL Advisory Group · Founder & Principal Advisor · Phone · Calendly link · LinkedIn'},
+  ]},
+  { name:'Branding', dates:'Apr 24 – May 8', tasks:[
+    {id:'4.1',name:'Define brand voice, tone & messaging pillars',day:4,dur:2,cp:true,tag:'merged',note:'Authoritative but human; strategic but accessible — 3 core pillars anchoring all content'},
+    {id:'4.2',name:'Finalize logo & visual identity',day:6,dur:4,cp:true,tag:'',note:'Budget $700 — logo, palette, typography, usage guide; needed before website and LinkedIn'},
+    {id:'4.3',name:'Write elevator pitch (30-sec & 2-min)',day:8,dur:1,cp:true,tag:'',note:'Used in networking, LinkedIn about, and discovery call opener — practice until natural'},
+    {id:'4.4',name:'Book & complete professional photography',day:6,dur:3,cp:false,tag:'new',note:'Budget $500–$1,000 — headshots + lifestyle shots for website hero and LinkedIn banner'},
+    {id:'4.5',name:'Create 1-page capabilities PDF',day:10,dur:2,cp:true,tag:'',note:'Services overview with pricing tiers — send before or after discovery calls'},
+  ]},
+  { name:'Sales & Marketing', dates:'May 1–25', tasks:[
+    {id:'5.1',name:'Define website sitemap & core message',day:11,dur:2,cp:true,tag:'',note:'Home · About · Services · Work With Me · Contact — lead with founder pain points'},
+    {id:'5.2',name:'Website copywriting',day:13,dur:3,cp:true,tag:'',note:'Write copy before design starts — problem → credibility → solution → CTA structure'},
+    {id:'5.3',name:'Website development & design',day:16,dur:14,cp:true,tag:'',note:'Budget $2,000–$3,000 — Squarespace or Webflow; hand off copy + brand guide on day 16'},
+    {id:'5.4',name:'Website QA, testing & go-live',day:30,dur:2,cp:true,tag:'',note:'Test mobile, all forms, Calendly embed — target live by May 22'},
+    {id:'5.5',name:'Optimize LinkedIn profile',day:11,dur:2,cp:true,tag:'',note:'Professional photo, banner, headline, about, featured capabilities PDF'},
+    {id:'5.6',name:'Create 60-day LinkedIn content calendar',day:13,dur:2,cp:false,tag:'new',note:'2 posts/week — insight, founder story, service education, thought leadership'},
+    {id:'5.7',name:'Create sales & marketing strategy doc',day:11,dur:2,cp:false,tag:'',note:'Target channels, outreach volume, conversion goals, 90-day KPIs'},
+  ]},
+  { name:'GTM & Outreach', dates:'May 4–18', tasks:[
+    {id:'6.1',name:'Build outreach target list (50+ contacts)',day:14,dur:2,cp:true,tag:'',note:'Founders, CEOs, COOs — Bay Area tech/biotech; pull from LinkedIn + personal network'},
+    {id:'6.2',name:'Segment list by priority tier',day:16,dur:1,cp:true,tag:'',note:'T1: warm intro likely · T2: known · T3: cold — different message per segment'},
+    {id:'6.3',name:'Write personalised outreach messages',day:17,dur:2,cp:true,tag:'',note:'One message per segment — reference real shared context; no mass blast'},
+    {id:'6.4',name:'Draft referral email template',day:19,dur:1,cp:false,tag:'',note:'"Who in your network is building a people-first company?" — short and easy to forward'},
+    {id:'6.5',name:'Publish soft-launch LinkedIn announcement',day:19,dur:1,cp:true,tag:'new',note:'Story-driven: why FGL, why now, who you serve — engage every comment for 2 hrs'},
+  ]},
+  { name:'Business Dev', dates:'May 11 – Jun 1', tasks:[
+    {id:'7.1',name:'Send outreach wave 1 (Tier 1 contacts)',day:20,dur:3,cp:true,tag:'',note:'Warm, personal — reference shared context; no pitch; goal is to book a call'},
+    {id:'7.2',name:'Publish LinkedIn posts (weekly cadence)',day:19,dur:12,cp:false,tag:'',note:'Values-based org building · Fractional HR myths · Culture at scale'},
+    {id:'7.3',name:'Schedule discovery / intro calls',day:23,dur:5,cp:true,tag:'',note:'Goal: 5–8 calls booked from wave 1; use Calendly link in all outreach'},
+    {id:'7.4',name:'Send referral outreach to partner network',day:21,dur:2,cp:false,tag:'',note:'Attorneys, CPAs, recruiters who serve your ICP — make it easy to refer you'},
+    {id:'7.5',name:'Conduct discovery calls',day:28,dur:7,cp:true,tag:'',note:'Use intake form + discovery framework; record with Otter.ai; note key pain points'},
+    {id:'7.6',name:'Follow-up cadence after calls',day:32,dur:5,cp:true,tag:'',note:'24-hr thank-you → 3-day check-in → proposal → follow-up; use email templates from 3.7'},
+  ]},
+  { name:'Conversion', dates:'May 25 – Jun 1', tasks:[
+    {id:'8.1',name:'Customize & send proposals',day:33,dur:3,cp:true,tag:'',note:'Use Tier SOW templates — tailor scope, timeline, and investment to each call'},
+    {id:'8.2',name:'Negotiate & close first client',day:36,dur:4,cp:true,tag:'',note:'Target: at least 1 signed engagement before or on June 1 launch date'},
+    {id:'8.3',name:'Execute contracts & NDAs via DocuSign',day:39,dur:1,cp:true,tag:'',note:'MSA signed before any work begins — do not start without executed contract'},
+    {id:'8.4',name:'Conduct financial runway review',day:37,dur:2,cp:false,tag:'new',note:'Map months 1–3 income needs to pipeline; adjust outreach intensity accordingly'},
+    {id:'8.5',name:'Publish official launch announcement',day:40,dur:1,cp:true,tag:'new',note:'LinkedIn post + email to full network — June 1, FGL Advisory is open for business'},
+  ]},
+];
+
+const DEFAULT_SETUP = [
+  {name:'Branding & design',vendor:'',proj:700,actual:'',status:'pending'},
+  {name:'Professional photography',vendor:'',proj:750,actual:'',status:'pending'},
+  {name:'Photography accessories',vendor:'',proj:1800,actual:'',status:'pending'},
+  {name:'Domain registration',vendor:'GoDaddy',proj:60,actual:60,status:'paid'},
+  {name:'Website development',vendor:'',proj:2000,actual:'',status:'pending'},
+  {name:'Business registration (LLC)',vendor:'CA SOS',proj:70,actual:'',status:'pending'},
+  {name:'City business license',vendor:'',proj:100,actual:'',status:'pending'},
+  {name:'Attorney — contract drafting',vendor:'',proj:600,actual:'',status:'pending'},
+  {name:'E&O insurance (first year)',vendor:'Hiscox',proj:1440,actual:'',status:'pending'},
+  {name:'Things 3 — Mac task app (one-time)',vendor:'Cultured Code',proj:50,actual:'',status:'pending'},
+];
+
+const DEFAULT_MONTHLY = [
+  {name:'General liability insurance',vendor:'Next / Hiscox',proj:120,actual:'',status:'pending'},
+  {name:'Professional liability (E&O)',vendor:'Next / Hiscox',proj:120,actual:'',status:'pending'},
+  {name:'Website maintenance & hosting',vendor:'Squarespace / Webflow',proj:150,actual:'',status:'pending'},
+  {name:'Google Workspace',vendor:'Google',proj:7,actual:'',status:'pending'},
+  {name:'Claude Pro',vendor:'Anthropic',proj:20,actual:'',status:'pending'},
+  {name:'ChatGPT Plus (optional)',vendor:'OpenAI',proj:0,actual:'',status:'n/a'},
+  {name:'LinkedIn Premium Business',vendor:'LinkedIn',proj:40,actual:'',status:'pending'},
+  {name:'Notion Plus',vendor:'Notion',proj:10,actual:'',status:'pending'},
+  {name:'NotebookLM',vendor:'Google',proj:0,actual:'',status:'n/a'},
+  {name:'Blinq digital business card',vendor:'Blinq',proj:0,actual:'',status:'n/a'},
+  {name:'Canva Pro',vendor:'Canva',proj:15,actual:'',status:'pending'},
+  {name:'Fathom — meeting notes',vendor:'Fathom',proj:16,actual:'',status:'pending'},
+  {name:'Otter.ai — in-person transcription',vendor:'Otter',proj:8,actual:'',status:'pending'},
+  {name:'Wave (accounting)',vendor:'Wave',proj:0,actual:'',status:'n/a'},
+  {name:'HoneyBook Starter',vendor:'HoneyBook',proj:29,actual:'',status:'pending'},
+  {name:'Calendly Standard',vendor:'Calendly',proj:10,actual:'',status:'pending'},
+  {name:'HelloSign e-signatures',vendor:'Dropbox Sign',proj:0,actual:'',status:'n/a'},
+  {name:'Asana — client projects',vendor:'Asana',proj:0,actual:'',status:'n/a'},
+  {name:'Loom — async video',vendor:'Loom',proj:0,actual:'',status:'n/a'},
+  {name:'Zoom Pro',vendor:'Zoom',proj:15,actual:'',status:'pending'},
+  {name:'Buffer / Later — social scheduling',vendor:'Buffer',proj:0,actual:'',status:'n/a'},
+  {name:'Zapier — automation (when needed)',vendor:'Zapier',proj:0,actual:'',status:'n/a'},
+  {name:'Collective — S-Corp & accounting',vendor:'Collective',proj:0,actual:'',status:'n/a'},
+];
+
+let states = {};
+let allTasks = [];
+let setupItems = [];
+let monthlyItems = [];
+
+phases.forEach(p => {
+  p.tasks.forEach(t => {
+    t.sid = p.name.replace(/[\s&]/g,'_')+'_'+t.id.replace('.','_');
+    t.phase = p.name;
+    states[t.sid] = false;
+    allTasks.push(t);
+  });
+});
+
+function load() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    // Also try to migrate task states from previous version
+    const sOld = localStorage.getItem('fgl_v4');
+    if (s) {
+      const d = JSON.parse(s);
+      if (d.states) Object.keys(d.states).forEach(k => { if (k in states) states[k] = d.states[k]; });
+      if (d.setup) setupItems = d.setup;
+      else setupItems = JSON.parse(JSON.stringify(DEFAULT_SETUP));
+      if (d.monthly) monthlyItems = d.monthly;
+      else monthlyItems = JSON.parse(JSON.stringify(DEFAULT_MONTHLY));
+    } else if (sOld) {
+      // Migrate task states from v4
+      const dOld = JSON.parse(sOld);
+      if (dOld.states) Object.keys(dOld.states).forEach(k => { if (k in states) states[k] = dOld.states[k]; });
+      setupItems = JSON.parse(JSON.stringify(DEFAULT_SETUP));
+      monthlyItems = JSON.parse(JSON.stringify(DEFAULT_MONTHLY));
+    } else {
+      setupItems = JSON.parse(JSON.stringify(DEFAULT_SETUP));
+      monthlyItems = JSON.parse(JSON.stringify(DEFAULT_MONTHLY));
+    }
+  } catch(e) {
+    setupItems = JSON.parse(JSON.stringify(DEFAULT_SETUP));
+    monthlyItems = JSON.parse(JSON.stringify(DEFAULT_MONTHLY));
+  }
+}
+
+let stimer;
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({states, setup:setupItems, monthly:monthlyItems}));
+    const i = document.getElementById('save-ind');
+    i.classList.add('show');
+    clearTimeout(stimer);
+    stimer = setTimeout(() => i.classList.remove('show'), 1800);
+  } catch(e) {}
+}
+
+function resetAll() {
+  if (!confirm('Reset all tasks to unchecked? Budget data will be kept.')) return;
+  Object.keys(states).forEach(k => states[k] = false);
+  save(); render();
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sec-'+name).classList.add('active');
+}
+
+function setFilter(ph, btn) {
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTasks(ph);
+}
+
+function toggle(sid) {
+  states[sid] = !states[sid];
+  save(); render();
+}
+
+function chkSVG(col) {
+  return `<svg width="9" height="9" viewBox="0 0 9 9" fill="none"><polyline points="1,4.5 3.5,7 8,2" stroke="${col||'#fff'}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function fmt(n) { return '$'+Math.round(n||0).toLocaleString(); }
+
+function render() {
+  updateStats();
+  renderGantt();
+  renderTasks(currentFilter());
+  renderBudget();
+  renderProgress();
+}
+
+function currentFilter() {
+  const ab = document.querySelector('#filter-bar .fbtn.active');
+  return ab ? ab.dataset.phase : 'all';
+}
+
+function updateStats() {
+  const done = Object.values(states).filter(Boolean).length;
+  const total = allTasks.length;
+  const pct = Math.round(done/total*100);
+  const cpAll = allTasks.filter(t => t.cp).length;
+  const cpDone = allTasks.filter(t => t.cp && states[t.sid]).length;
+  const setupActual = setupItems.reduce((s,i) => s+(parseFloat(i.actual)||0),0);
+  const monthlyProj = monthlyItems.reduce((s,i) => s+(parseFloat(i.proj)||0),0);
+  const setupProj = setupItems.reduce((s,i) => s+(parseFloat(i.proj)||0),0);
+  const burn3 = setupProj + monthlyProj*3;
+
+  document.getElementById('prog-txt').textContent = done+' of '+total+' tasks complete';
+  document.getElementById('prog-pct').textContent = pct+'%';
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-done').textContent = done;
+  document.getElementById('s-rem').textContent = total-done;
+  document.getElementById('s-crit').textContent = cpDone+'/'+cpAll;
+  document.getElementById('pct-banner').textContent = pct+'%';
+  document.getElementById('cp-banner').textContent = cpDone+'/'+cpAll;
+  document.getElementById('budget-banner').textContent = fmt(setupActual);
+  document.getElementById('s-budget-rem').textContent = fmt(setupProj-setupActual)+' left';
+
+  const cur = phases.find(p => p.tasks.some(t => !states[t.sid]));
+  document.getElementById('s-phase').textContent = cur ? cur.name : 'Complete!';
+
+  const ms = LAUNCH - new Date();
+  document.getElementById('days-left').textContent = Math.max(0,Math.ceil(ms/86400000))+' days';
+
+  document.getElementById('phase-bars').innerHTML = phases.map(p => {
+    const pd = p.tasks.filter(t => states[t.sid]).length;
+    const pp = Math.round(pd/p.tasks.length*100);
+    const col = PC[p.name]||'#888';
+    return `<div class="pb-wrap"><div class="pb-track"><div class="pb-fill" style="width:${pp}%;background:${col}"></div></div><div class="pb-lbl">${p.name.split(' ')[0]}</div></div>`;
+  }).join('');
+
+  document.getElementById('b-setup-proj').textContent = fmt(setupProj);
+  document.getElementById('b-setup-actual').textContent = fmt(setupActual);
+  document.getElementById('b-monthly').textContent = fmt(monthlyProj)+'/mo';
+  document.getElementById('b-burn').textContent = fmt(burn3);
+}
+
+function renderGantt() {
+  const tbody = document.getElementById('gantt-body');
+  const todayOff = Math.max(0,(TODAY-START)/86400000);
+  const launchOff = (LAUNCH-START)/86400000;
+  const tp = Math.min(100,todayOff/TOTAL*100);
+  const lp = Math.min(100,launchOff/TOTAL*100);
+  let html = '';
+  phases.forEach(p => {
+    const col = PC[p.name]||'#888';
+    const pd = p.tasks.filter(t=>states[t.sid]).length;
+    html += `<tr class="ph-row"><td colspan="11"><span class="ph-pill" style="background:${col}">${p.name.toUpperCase()}</span><span style="font-size:10px;color:#aaa;margin-left:8px">${p.dates} · ${pd}/${p.tasks.length} done</span></td></tr>`;
+    p.tasks.forEach(t => {
+      const dn = states[t.sid];
+      const lp2 = (t.day/TOTAL*100).toFixed(2);
+      const wp = Math.max(1.5,(t.dur/TOTAL*100)).toFixed(2);
+      const bc = dn?'gbar dn':(t.cp?'gbar cp':'gbar std');
+      html += `<tr onclick="toggle('${t.sid}')">
+        <td style="padding:3px 4px 3px 8px"><div class="chkb${dn?' on':''}">${dn?chkSVG():''}</div></td>
+        <td class="t-id-cell">${t.id}</td>
+        <td><span class="t-label${dn?' done':''}">${t.name}</span></td>
+        <td style="font-size:11px;color:#ccc;text-align:center">${t.dur}</td>
+        <td colspan="7" class="gbar-cell">
+          <div class="tday" style="left:${tp.toFixed(2)}%"></div>
+          <div class="lday" style="left:${lp.toFixed(2)}%"></div>
+          <div class="${bc}" style="left:${lp2}%;width:${wp}%"></div>
+        </td>
+      </tr>`;
+    });
+  });
+  tbody.innerHTML = html;
+}
+
+function renderTasks(filter) {
+  filter = filter||'all';
+  let html = '';
+  phases.forEach(p => {
+    if (filter!=='all' && p.name!==filter) return;
+    const col = PC[p.name]||'#888';
+    const pd = p.tasks.filter(t=>states[t.sid]).length;
+    const cpC = p.tasks.filter(t=>t.cp).length;
+    html += `<div class="ph-group"><div class="phg-hdr">
+      <span class="phg-pill" style="background:${col}">${p.name.toUpperCase()}</span>
+      <span class="phg-dates">${p.dates}</span>
+      <span class="phg-cp">${cpC} critical</span>
+      <span class="phg-prog">${pd}/${p.tasks.length}</span>
+    </div>`;
+    p.tasks.forEach(t => {
+      const dn = states[t.sid];
+      html += `<div class="ti${dn?' done':''}${t.cp?' cp-task':''}${t.tag==='new'?' new-task':''}" onclick="toggle('${t.sid}')">
+        <div class="t-chk">${dn?chkSVG():''}</div>
+        <div class="tbdy">
+          <div class="tname">${t.name}</div>
+          <div class="tmeta">
+            <span class="tid">${t.id}</span>
+            ${t.cp?'<span class="cpb">Critical path</span>':''}
+            ${t.tag==='new'?'<span class="newb">New</span>':''}
+            ${t.tag==='merged'?'<span class="mergedb">Merged</span>':''}
+            <span class="tnote">${t.note}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('task-list').innerHTML = html;
+}
+
+function renderBudget() {
+  const setupProj = setupItems.reduce((s,i)=>s+(parseFloat(i.proj)||0),0);
+  const setupActual = setupItems.reduce((s,i)=>s+(parseFloat(i.actual)||0),0);
+  const monthlyProj = monthlyItems.reduce((s,i)=>s+(parseFloat(i.proj)||0),0);
+  const monthlyActual = monthlyItems.reduce((s,i)=>s+(parseFloat(i.actual)||0),0);
+
+  document.getElementById('setup-total-hdr').textContent = fmt(setupProj)+' projected · '+fmt(setupActual)+' spent';
+  document.getElementById('monthly-total-hdr').textContent = fmt(monthlyProj)+'/mo projected';
+
+  const statusOpts = ['pending','paid','n/a'];
+  const statusColors = {paid:'status-paid',pending:'status-pending','n/a':'status-na'};
+  const statusLabels = {paid:'Paid',pending:'Pending','n/a':'N/A'};
+
+  document.getElementById('setup-body').innerHTML = setupItems.map((item,i) => `
+    <tr>
+      <td><div class="item-name">${item.name}</div></td>
+      <td class="proj">${item.proj ? fmt(item.proj) : '—'}</td>
+      <td class="actual-cell"><input class="actual-input" value="${item.actual||''}" placeholder="—" onchange="updateSetup(${i},'actual',this.value)" /></td>
+      <td class="status-cell">
+        <select class="status-select ${statusColors[item.status]||''}" onchange="updateSetup(${i},'status',this.value)">
+          ${statusOpts.map(o=>`<option value="${o}"${item.status===o?' selected':''}>${statusLabels[o]}</option>`).join('')}
+        </select>
+      </td>
+      <td><button class="del-btn" onclick="delSetup(${i})">✕</button></td>
+    </tr>`).join('');
+
+  document.getElementById('monthly-body').innerHTML = monthlyItems.map((item,i) => `
+    <tr>
+      <td><div class="item-name">${item.name}</div>${item.vendor?`<div class="item-vendor">${item.vendor}</div>`:''}</td>
+      <td style="font-size:11px;color:#aaa">${item.vendor||''}</td>
+      <td class="proj">${item.proj ? fmt(item.proj) : '—'}</td>
+      <td class="actual-cell"><input class="actual-input" value="${item.actual||''}" placeholder="—" onchange="updateMonthly(${i},'actual',this.value)" /></td>
+      <td class="status-cell">
+        <select class="status-select ${statusColors[item.status]||''}" onchange="updateMonthly(${i},'status',this.value)">
+          ${statusOpts.map(o=>`<option value="${o}"${item.status===o?' selected':''}>${statusLabels[o]}</option>`).join('')}
+        </select>
+      </td>
+      <td><button class="del-btn" onclick="delMonthly(${i})">✕</button></td>
+    </tr>`).join('');
+}
+
+function updateSetup(i,field,val){ setupItems[i][field]=val; save(); updateStats(); renderBudget(); }
+function updateMonthly(i,field,val){ monthlyItems[i][field]=val; save(); updateStats(); renderBudget(); }
+function delSetup(i){ if(!confirm('Remove this item?'))return; setupItems.splice(i,1); save(); render(); }
+function delMonthly(i){ if(!confirm('Remove this item?'))return; monthlyItems.splice(i,1); save(); render(); }
+function addSetupItem(){
+  const n=document.getElementById('setup-name').value.trim();
+  const p=document.getElementById('setup-proj').value.trim();
+  if(!n)return;
+  setupItems.push({name:n,vendor:'',proj:parseFloat(p)||0,actual:'',status:'pending'});
+  document.getElementById('setup-name').value='';
+  document.getElementById('setup-proj').value='';
+  save(); render();
+}
+function addMonthlyItem(){
+  const n=document.getElementById('monthly-name').value.trim();
+  const v=document.getElementById('monthly-vendor').value.trim();
+  const p=document.getElementById('monthly-proj').value.trim();
+  if(!n)return;
+  monthlyItems.push({name:n,vendor:v,proj:parseFloat(p)||0,actual:'',status:'pending'});
+  document.getElementById('monthly-name').value='';
+  document.getElementById('monthly-vendor').value='';
+  document.getElementById('monthly-proj').value='';
+  save(); render();
+}
+
+function renderProgress() {
+  const phList = document.getElementById('phase-progress-list');
+  phList.innerHTML = phases.map(p => {
+    const pd = p.tasks.filter(t=>states[t.sid]).length;
+    const pp = Math.round(pd/p.tasks.length*100);
+    const col = PC[p.name]||'#888';
+    return `<div class="ppl-item">
+      <div class="ppl-row">
+        <div class="ppl-name"><span class="ppl-dot" style="background:${col}"></span>${p.name}</div>
+        <div class="ppl-count">${pd}/${p.tasks.length} · ${pp}%</div>
+      </div>
+      <div class="ppl-track"><div class="ppl-fill" style="width:${pp}%;background:${col}"></div></div>
+    </div>`;
+  }).join('');
+
+  const weekDates = ['Apr 20','Apr 27','May 4','May 11','May 18','May 25'];
+  const wt = document.getElementById('week-timeline');
+  const weekData = weekDates.map((label,wi) => {
+    const wStart = wi*7, wEnd = (wi+1)*7;
+    const wTasks = allTasks.filter(t => t.day < wEnd && (t.day+t.dur) > wStart);
+    const wDone = wTasks.filter(t=>states[t.sid]).length;
+    const wCp = wTasks.filter(t=>t.cp).length;
+    return {label, total:wTasks.length, done:wDone, cp:wCp};
+  });
+  const maxT = Math.max(...weekData.map(w=>w.total),1);
+  wt.innerHTML = weekData.map(w => `
+    <div class="wt-row">
+      <div class="wt-label" style="font-size:11px;color:#888">${w.label}</div>
+      <div class="wt-bar-wrap">
+        <div class="wt-track">
+          <div class="wt-fill${w.cp>0?' cp':''}" style="width:${Math.round(w.done/Math.max(w.total,1)*100)}%"></div>
+        </div>
+      </div>
+      <div class="wt-count">${w.done}/${w.total} done</div>
+      <div class="wt-week-label" style="font-size:10px;color:#bbb">${w.cp} critical</div>
+    </div>`).join('');
+
+  const cpTasks = allTasks.filter(t=>t.cp);
+  document.getElementById('critical-list').innerHTML = cpTasks.map(t => {
+    const dn = states[t.sid];
+    const col = PC[t.phase]||'#888';
+    return `<div class="cl-item${dn?' done':''}">
+      <div class="cl-dot${dn?' done-dot':''}"></div>
+      <div class="cl-name">${t.name}</div>
+      <span class="cl-id">${t.id}</span>
+      <span class="cl-phase" style="background:${col}">${t.phase.split(' ')[0]}</span>
+    </div>`;
+  }).join('');
+}
+
+function buildFilters() {
+  const bar = document.getElementById('filter-bar');
+  let html = `<button class="fbtn active" data-phase="all" onclick="setFilter('all',this)">All phases</button>`;
+  phases.forEach(p => {
+    html += `<button class="fbtn" data-phase="${p.name}" onclick="setFilter('${p.name}',this)">${p.name}</button>`;
+  });
+  bar.innerHTML = html;
+}
+
+function init() {
+  load();
+  const opts = {weekday:'short',month:'short',day:'numeric',year:'numeric'};
+  document.getElementById('today-lbl').textContent = 'Today: '+TODAY.toLocaleDateString('en-US',opts);
+  buildFilters();
+  render();
+}
+
+init();
+</script>
+</body>
+</html>
