@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FGL Advisory — Website Launch Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#141210;color:#E8E0D4;min-height:100vh}
+
+/* NAV */
+nav{background:#1C1A18;border-bottom:1px solid #2a2724;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-dot{width:8px;height:8px;background:#4A5E42;border-radius:50%}
+.nav-title{font-family:Georgia,serif;font-size:14px;color:#E8E0D4;font-weight:700}
+.nav-sub{font-size:9px;color:#6B6158;font-style:italic;margin-top:2px}
+.tabs{display:flex;gap:3px}
+.tab{padding:7px 16px;border:none;cursor:pointer;font-size:9px;font-weight:700;letter-spacing:.8px;background:transparent;color:#6B6158;transition:all .15s}
+.tab.on{background:#4A5E42;color:#E8E0D4}
+
+/* MAIN */
+main{padding:28px 32px;max-width:920px;margin:0 auto}
+.panel{display:none}
+.panel.on{display:block}
+
+/* PROGRESS CARD */
+.prog-card{background:#1C1A18;border:1px solid #2a2724;padding:20px 24px;margin-bottom:22px;display:flex;align-items:center;gap:22px}
+.prog-ring{flex-shrink:0}
+.prog-info{flex:1}
+.prog-info h2{font-family:Georgia,serif;font-size:15px;color:#E8E0D4;font-weight:700;margin-bottom:8px}
+.prog-track{height:5px;background:#2a2724;border-radius:3px;overflow:hidden;margin-bottom:5px}
+.prog-fill{height:100%;background:#4A5E42;border-radius:3px;transition:width .4s ease;width:0%}
+.prog-sub{font-size:9px;color:#6B6158}
+.prog-date{text-align:right}
+.prog-date .ey{font-size:8px;color:#7B4F35;font-weight:700;letter-spacing:1px;margin-bottom:3px}
+.prog-date .dv{font-family:Georgia,serif;font-size:14px;color:#D4B896}
+
+/* PHASES */
+.phase{margin-bottom:8px}
+.ph-btn{width:100%;background:#1a1714;border:1px solid #2a2724;padding:13px 18px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:13px;transition:all .2s}
+.ph-btn:hover{background:#1f1c19}
+.ph-btn.open{border-color:rgba(255,255,255,.14)}
+.ph-num{width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ph-num span{font-family:Georgia,serif;font-size:14px;color:#E8E0D4;font-weight:700}
+.ph-meta{flex:1}
+.ph-label{font-size:11px;font-family:Georgia,serif;color:#E8E0D4;font-weight:700}
+.ph-dates{font-size:8px;color:#6B6158;margin-left:8px}
+.ph-sum{font-size:8px;color:#6B6158;margin-top:3px;font-style:italic}
+.ph-right{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.ph-ct{font-size:8.5px;color:#6B6158}
+.ph-bar{width:44px;height:3px;background:#2a2724;border-radius:2px;overflow:hidden}
+.ph-bfill{height:100%;border-radius:2px}
+.ph-arr{font-size:9px;color:#6B6158}
+.task-list{border:1px solid #2a2724;border-top:none;display:none}
+.task-list.open{display:block}
+.task-row{display:flex;align-items:flex-start;gap:13px;padding:11px 18px;cursor:pointer;border-top:1px solid #252220;transition:background .1s}
+.task-row:first-child{border-top:none}
+.task-row:nth-child(even){background:#171512}
+.task-row:nth-child(odd){background:#1a1714}
+.task-row:hover{background:#1f1c18}
+.task-row.done{background:rgba(74,94,66,.07)!important}
+.cb{width:17px;height:17px;flex-shrink:0;margin-top:2px;border:1.5px solid #3a3530;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.cb.on{background:#4A5E42;border-color:#4A5E42}
+.cb .ck{color:#E8E0D4;font-size:10px;display:none}
+.cb.on .ck{display:block}
+.task-txt{flex:1;font-size:10.5px;color:#E8E0D4;line-height:1.55}
+.task-txt.done{text-decoration:line-through;color:#6B6158}
+.crit{font-size:7px;background:#7B4F35;color:#E8E0D4;padding:2px 5px;margin-right:6px;letter-spacing:.5px;font-weight:700;vertical-align:middle}
+
+/* DESIGN TAB */
+.sec-lbl{font-size:7px;letter-spacing:3px;color:#7B4F35;font-weight:700;margin-bottom:13px;text-transform:uppercase}
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:11px}
+.tpl-card{background:#1a1714;border:1px solid #2a2724;padding:17px}
+.tpl-hdr{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.tpl-rank{padding:3px 9px;font-size:7px;font-weight:700;letter-spacing:1px;color:#E8E0D4}
+.tpl-name{font-family:Georgia,serif;font-size:14px;color:#E8E0D4;font-weight:700}
+.tpl-tag{margin-left:auto;font-size:7px;font-weight:700;letter-spacing:1px;padding:2px 7px}
+.tpl-note{font-size:9px;color:#6B6158;line-height:1.7}
+.avoid{background:#1a0d0d;border:1px solid rgba(123,79,53,.4);padding:11px 15px;font-size:8.5px;color:#7B4F35;line-height:1.6}
+.col-row{display:grid;grid-template-columns:40px 110px 88px 1fr;gap:13px;align-items:center;padding:8px 13px;background:#1a1714;border:1px solid #252220;margin-bottom:5px}
+.sw{width:26px;height:26px;border:1px solid #3a3530;border-radius:2px}
+.cn{font-size:9px;color:#E8E0D4;font-weight:600}
+.ch{font-size:8.5px;color:#D4B896;letter-spacing:.5px}
+.cu{font-size:8px;color:#6B6158}
+.fnt-row{display:grid;grid-template-columns:155px 175px 115px 1fr;gap:13px;align-items:center;padding:13px 15px;background:#1a1714;border:1px solid #252220;margin-bottom:5px}
+.fr{font-size:8px;color:#7B4F35;font-weight:700}
+.fn{font-family:Georgia,serif;font-size:11px;color:#E8E0D4}
+.fd{font-size:8px;color:#6B6158}
+.lay-row{display:flex;gap:13px;padding:9px 15px;background:#1a1714;border:1px solid #252220;align-items:flex-start;margin-bottom:5px}
+.lay-ck{width:19px;height:19px;background:rgba(74,94,66,.15);border:1px solid rgba(74,94,66,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;color:#8FA085}
+.lay-tx{font-size:9.5px;color:#E8E0D4;line-height:1.6}
+
+.ds-block{margin-bottom:24px}
+
+/* GITHUB BANNER */
+.gh-banner{background:#1a1714;border:1px solid #2a2724;padding:16px 20px;margin-bottom:22px;display:flex;align-items:center;gap:14px}
+.gh-icon{width:32px;height:32px;background:#4A5E42;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.gh-text{flex:1;font-size:9.5px;color:#6B6158;line-height:1.6}
+.gh-text a{color:#8FA085;text-decoration:none}
+.gh-text strong{color:#E8E0D4}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    <div>
+      <div class="nav-title">FGL Advisory Group</div>
+      <div class="nav-sub">Website Launch Tracker &nbsp;·&nbsp; Target: May 25, 2026 &nbsp;·&nbsp; v2</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" onclick="showTab('checklist',this)">✓&nbsp; Checklist</button>
+    <button class="tab" onclick="showTab('design',this)">◈&nbsp; Design System</button>
+    <button class="tab" onclick="showTab('github',this)">⊕&nbsp; Add to Dashboard</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ══ CHECKLIST ══ -->
+  <div id="panel-checklist" class="panel on">
+    <div class="prog-card">
+      <div class="prog-ring">
+        <svg width="54" height="54">
+          <circle cx="27" cy="27" r="21" fill="none" stroke="rgba(212,184,150,.18)" stroke-width="4"/>
+          <circle cx="27" cy="27" r="21" fill="none" stroke="#4A5E42" stroke-width="4"
+            stroke-dasharray="131.95" stroke-dashoffset="131.95" stroke-linecap="butt"
+            transform="rotate(-90 27 27)" id="rFill" style="transition:stroke-dashoffset .4s ease"/>
+          <text x="27" y="32" text-anchor="middle" font-size="11" font-weight="700"
+            fill="#E8E0D4" font-family="Georgia,serif" id="rTxt">0%</text>
+        </svg>
+      </div>
+      <div class="prog-info">
+        <h2 id="pTitle">Launch Progress</h2>
+        <div class="prog-track"><div class="prog-fill" id="pFill"></div></div>
+        <div class="prog-sub" id="pSub">Loading…</div>
+      </div>
+      <div class="prog-date">
+        <div class="ey">LAUNCH DATE</div>
+        <div class="dv">May 25, 2026</div>
+      </div>
+    </div>
+    <div id="phaseWrap"></div>
+  </div>
+
+  <!-- ══ DESIGN SYSTEM ══ -->
+  <div id="panel-design" class="panel">
+
+    <div class="ds-block">
+      <div class="sec-lbl">Squarespace Template</div>
+      <div class="tpl-grid">
+        <div class="tpl-card">
+          <div class="tpl-hdr">
+            <div class="tpl-rank" style="background:#4A5E42">1st Choice</div>
+            <div class="tpl-name">Cedar</div>
+            <div class="tpl-tag" style="color:#4A5E42;border:1px solid #4A5E42">RECOMMENDED</div>
+          </div>
+          <div class="tpl-note">Bold serif typography, ample whitespace, authority-first layout. Squarespace's own recommendation for financial and business consulting firms.</div>
+        </div>
+        <div class="tpl-card">
+          <div class="tpl-hdr">
+            <div class="tpl-rank" style="background:#7B4F35">2nd Choice</div>
+            <div class="tpl-name">Corrigan</div>
+            <div class="tpl-tag" style="color:#7B4F35;border:1px solid #7B4F35">STRONG BACKUP</div>
+          </div>
+          <div class="tpl-note">Text-led, alternating dark/light sections that mirror the v3 wireframe structure exactly. Pre-built service pages. Ideal if Cedar feels too spare.</div>
+        </div>
+      </div>
+      <div class="avoid"><strong>Do NOT use:</strong> Hester (e-commerce template) or Almar (lifestyle aesthetic). These were previous recommendations and have been corrected.</div>
+    </div>
+
+    <div class="ds-block">
+      <div class="sec-lbl">Brand Color System</div>
+      <div class="col-row"><div class="sw" style="background:#4A5E42"></div><div class="cn">Forest</div><div class="ch">#4A5E42</div><div class="cu">CTAs, nav button, closing CTA banners only</div></div>
+      <div class="col-row"><div class="sw" style="background:#1C1A18"></div><div class="cn">Ink</div><div class="ch">#1C1A18</div><div class="cu">Footer background, primary headings, dark sections</div></div>
+      <div class="col-row"><div class="sw" style="background:#3A3530"></div><div class="cn">Charcoal</div><div class="ch">#3A3530</div><div class="cu">Dark section backgrounds (About CTA, Insights strip)</div></div>
+      <div class="col-row"><div class="sw" style="background:#7B4F35"></div><div class="cn">Tobacco</div><div class="ch">#7B4F35</div><div class="cu">Eyebrow labels, accent color, article tags</div></div>
+      <div class="col-row"><div class="sw" style="background:#D4B896"></div><div class="cn">Sandstone</div><div class="ch">#D4B896</div><div class="cu">Dividers, secondary buttons on dark bg, numbered serifs</div></div>
+      <div class="col-row"><div class="sw" style="background:#E8E0D4"></div><div class="cn">Linen</div><div class="ch">#E8E0D4</div><div class="cu">Text on dark backgrounds, light card surfaces</div></div>
+      <div class="col-row"><div class="sw" style="background:#8FA085"></div><div class="cn">Sage</div><div class="ch">#8FA085</div><div class="cu">Calendly available dates, secondary accents only</div></div>
+      <div class="col-row"><div class="sw" style="background:#F7F4F0;border:1px solid #3a3530"></div><div class="cn">Off-White</div><div class="ch">#F7F4F0</div><div class="cu">Alternating section backgrounds</div></div>
+      <div class="col-row"><div class="sw" style="background:#FEFDFB;border:1px solid #3a3530"></div><div class="cn">Warm White</div><div class="ch">#FEFDFB</div><div class="cu">Primary page background — NOT pure white</div></div>
+    </div>
+
+    <div class="ds-block">
+      <div class="sec-lbl">Typography</div>
+      <div class="fnt-row"><div class="fr">Display / H1 / H2</div><div class="fn">Cormorant Garamond</div><div class="fd">700 Bold · 28–48px</div><div class="fd" style="font-style:italic">Large, confident, editorial. The voice of FGL.</div></div>
+      <div class="fnt-row"><div class="fr">Body / Lead</div><div class="fn">DM Sans or Jost</div><div class="fd">300–400 · 16–20px</div><div class="fd" style="font-style:italic">Clean, modern, readable. Never under 16px.</div></div>
+      <div class="fnt-row"><div class="fr">Eyebrow / Labels</div><div class="fn">DM Sans or Jost</div><div class="fd">700 Bold · 11px</div><div class="fd" style="font-style:italic">All caps, 3px letter spacing, Tobacco color.</div></div>
+    </div>
+
+    <div class="ds-block">
+      <div class="sec-lbl">Layout Principles — v3</div>
+      <div class="lay-row"><div class="lay-ck">✓</div><div class="lay-tx">Asymmetric split layouts (left content, right trust/credential block) — NOT centered grids</div></div>
+      <div class="lay-row"><div class="lay-ck">✓</div><div class="lay-tx">One dominant CTA per page — no competing buttons</div></div>
+      <div class="lay-row"><div class="lay-ck">✓</div><div class="lay-tx">Trust signals above the fold on every page</div></div>
+      <div class="lay-row"><div class="lay-ck">✓</div><div class="lay-tx">Minimum section padding: 52px top/bottom on desktop</div></div>
+      <div class="lay-row"><div class="lay-ck">✓</div><div class="lay-tx">Sandstone 1px gaps as grid dividers — not colored card backgrounds</div></div>
+      <div class="lay-row"><div class="lay-ck">✓</div><div class="lay-tx">Forest green reserved for CTAs only — never section backgrounds except final CTA banners</div></div>
+    </div>
+
+  </div>
+
+  <!-- ══ ADD TO DASHBOARD ══ -->
+  <div id="panel-github" class="panel">
+    <div class="gh-banner">
+      <div class="gh-icon">⊕</div>
+      <div class="gh-text">
+        <strong>To add this tracker to your GitHub dashboard</strong> at
+        <a href="https://flavia-fgl.github.io/fgl-dashboard/FGL_Advisory_Dashboard_v4_2.html" target="_blank">flavia-fgl.github.io/fgl-dashboard</a>,
+        follow the three steps below. This file saves progress in the browser automatically.
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="tpl-card">
+        <div style="font-size:8px;color:#7B4F35;font-weight:700;letter-spacing:1.5px;margin-bottom:10px">STEP 1 — UPLOAD THIS FILE TO GITHUB</div>
+        <div style="font-size:10px;color:#E8E0D4;line-height:1.7">Go to <strong style="color:#8FA085">github.com/flavia-fgl/fgl-dashboard</strong> → click <strong style="color:#8FA085">Add file → Upload files</strong> → drag and drop <strong style="color:#8FA085">FGL_Website_Tracker.html</strong> → click <strong style="color:#8FA085">Commit changes</strong>. It will be live at:<br><br><span style="color:#D4B896;font-size:9.5px">flavia-fgl.github.io/fgl-dashboard/FGL_Website_Tracker.html</span></div>
+      </div>
+      <div class="tpl-card">
+        <div style="font-size:8px;color:#7B4F35;font-weight:700;letter-spacing:1.5px;margin-bottom:10px">STEP 2 — ADD A LINK IN YOUR DASHBOARD</div>
+        <div style="font-size:10px;color:#E8E0D4;line-height:1.7">Open <strong style="color:#8FA085">FGL_Advisory_Dashboard_v4_2.html</strong> in GitHub → click the pencil ✏️ (Edit) icon → find the navigation area at the top of the HTML → add this line inside your nav links:<br><br><span style="font-family:monospace;font-size:9px;color:#8FA085;background:#111;padding:6px 10px;display:inline-block;margin-top:4px">&lt;a href="FGL_Website_Tracker.html"&gt;Website Tracker&lt;/a&gt;</span></div>
+      </div>
+      <div class="tpl-card">
+        <div style="font-size:8px;color:#7B4F35;font-weight:700;letter-spacing:1.5px;margin-bottom:10px">STEP 3 — COMMIT AND OPEN</div>
+        <div style="font-size:10px;color:#E8E0D4;line-height:1.7">Click <strong style="color:#8FA085">Commit changes</strong> → wait 60 seconds → open your dashboard and the Website Tracker link will be live. Your progress saves automatically in this browser.</div>
+      </div>
+      <div class="avoid" style="margin-top:4px">
+        <strong>Note on progress saving:</strong> This tracker uses your browser's localStorage. Your checkboxes persist as long as you use the same browser. They do not sync across devices — this is by design for a private tool.
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const SKEY='fgl_web_tracker_v2';
+let state={};
+try{state=JSON.parse(localStorage.getItem(SKEY))||{};}catch(e){}
+let openPhase=1;
+
+const phases=[
+{id:1,week:"Week 1",dates:"May 11–17",color:"#4A5E42",label:"Platform & Foundation Setup",sum:"Get the platform configured before touching a single page.",tasks:[
+  {id:"1-1",crit:true,t:"Subscribe to Squarespace Business plan at squarespace.com (required for Calendly Code Block embed)"},
+  {id:"1-2",crit:true,t:"Select template — Cedar (first choice: bold serif, whitespace-first, authority-led) or Corrigan (second choice: text-led, alternating dark/light, pre-built service pages). Do NOT use Hester — e-commerce template."},
+  {id:"1-3",t:"Connect custom domain: fgladvisory.com under Settings > Domains"},
+  {id:"1-4",t:"Create Calendly account at calendly.com using flavia@fgladvisory.com"},
+  {id:"1-5",t:"Set up Discovery Call event in Calendly: 30 min, name + email + company only, Forest green (#4A5E42) button color if on paid plan"},
+  {id:"1-6",t:"Upload all logo files to a Google Drive folder for easy access during build"},
+  {id:"1-7",t:"Set up Google Analytics (free) — note your Measurement ID (G-XXXXXXXX)"},
+  {id:"1-8",t:"Set up Google Search Console and verify domain ownership"},
+  {id:"1-9",t:"Book professional photography session if not already done (About Flavia hero — warm natural light, portrait)"},
+]},
+{id:2,week:"Week 2 — Part A",dates:"May 18–19",color:"#7B4F35",label:"Design System Application",sum:"Apply the full FGL v3 design system before building any pages. Design first, content second.",tasks:[
+  {id:"2-1",crit:true,t:"Set Site Background to #FEFDFB (warm white) — NOT pure white, NOT #F5F2EE. Design > Site Styles > Background."},
+  {id:"2-2",t:"Apply color palette: Forest #4A5E42 · Charcoal #3A3530 · Tobacco #7B4F35 · Sandstone #D4B896 · Linen #E8E0D4 · Sage #8FA085 · Stone #6B6158 · Ink #1C1A18"},
+  {id:"2-3",crit:true,t:"Set Heading font to Cormorant Garamond (Google Fonts, weight 700). Design > Site Styles > Fonts > Headings."},
+  {id:"2-4",t:"Set Body font to DM Sans or Jost (Google Fonts, weight 300/400). Design > Site Styles > Fonts > Body."},
+  {id:"2-5",t:"Set body text size to minimum 16px. Line height 1.75 for all body text."},
+  {id:"2-6",t:"Set primary button: Forest #4A5E42 background, Linen #E8E0D4 text, NO border radius (square corners), padding 11px 26px."},
+  {id:"2-7",t:"Set navigation: white background, Ink #1C1A18 links, Forest active state, 'Schedule a Call' as styled Forest button at far right."},
+  {id:"2-8",t:"Set footer: Ink #1C1A18 background, Linen text, 3-column layout: Brand + tagline | Page links | Location + LinkedIn"},
+  {id:"2-9",t:"Upload Horizontal Lockup logo to header (Design > Logo and Title)."},
+  {id:"2-10",t:"Upload Frameless Monogram as favicon (Design > Browser Icon)."},
+  {id:"2-11",t:"Configure navigation: About Flavia / Services / Approach / Insights / Speaking — then 'Schedule a Call' as styled button."},
+]},
+{id:3,week:"Week 2 — Part B",dates:"May 19–21",color:"#6B6158",label:"Page Build — All 7 Pages",sum:"Build each page using the v3 wireframes as your reference. Open Wireframes on one screen, Squarespace on the other.",tasks:[
+  {id:"3-1",crit:true,t:"HOME §1: Split-layout hero. Left: eyebrow + large serif headline + lead + single CTA + founder byline. Right: trust block with prior employers + 4 credential stats. White bg, generous padding."},
+  {id:"3-2",t:"HOME §2: Centered resonance statement on off-white. Tobacco accent on key phrase. Max-width 620px centered column."},
+  {id:"3-3",t:"HOME §3: Services 3-column grid on white. Sandstone numerals 01/02/03. 1px Sandstone gap as dividers — no colored card backgrounds."},
+  {id:"3-4",t:"HOME §4: Two-column 'Why FGL'. Left: copy. Right: two pull quotes with Forest left border. Off-white bg."},
+  {id:"3-5",t:"HOME §5: Full-width Forest CTA banner. Sandstone button. Single action only."},
+  {id:"3-6",t:"ABOUT FLAVIA §1: Two-column hero. Left: name (32px+ serif), title, credentials, story, two CTAs. Right: photo + quick-stats table. White bg."},
+  {id:"3-7",t:"ABOUT FLAVIA §2: Two-column career timeline. Left: authority paragraph. Right: cards for Intuitive Surgical, Smith & Nephew, Tusker Medical, USF — Forest left-border accent."},
+  {id:"3-8",t:"ABOUT FLAVIA §3: Values 3-column grid. Sandstone numerals. Forest value name. Body copy below."},
+  {id:"3-9",t:"ABOUT FLAVIA §4: Expertise tag cloud — 12 skills as Sandstone-bordered pills."},
+  {id:"3-10",t:"ABOUT FLAVIA §5: Charcoal 2-column split CTA. Left: work with me. Right: Speaking bridge → /speaking."},
+  {id:"3-11",t:"SERVICES §1: Off-white hero, large serif headline, max-width lead paragraph."},
+  {id:"3-12",t:"SERVICES §2/3/4: One section per service tier. Tag + numbered headline + body + bullets + CTA left. Forest sidebar with engagement note right. Alternate white/off-white."},
+  {id:"3-13",t:"SERVICES §5: Charcoal closing CTA. Centered headline + Sandstone button."},
+  {id:"3-14",t:"APPROACH §1: Two-column split intro on white. Large serif left, lead right."},
+  {id:"3-15",t:"APPROACH §2/3/4: Three numbered phases. Ghost numeral behind colored numeral. Output strip at bottom. Alternate off-white/white."},
+  {id:"3-16",t:"APPROACH §5: Forest closing CTA. Sandstone button."},
+  {id:"3-17",t:"INSIGHTS §1: Two-column hero on off-white. Large serif left, lead + cadence note right."},
+  {id:"3-18",t:"INSIGHTS §2: Featured article — two-column, image left, preview right. White bg."},
+  {id:"3-19",t:"INSIGHTS §3: Two-column article grid on off-white. Article 2 real, Article 3 teaser (muted)."},
+  {id:"3-20",t:"INSIGHTS §4: Charcoal inline CTA strip. Pull quote left, Forest button right."},
+  {id:"3-21",t:"SPEAKING §1: Two-column hero on off-white. Left: authority intro + CTA. Right: format table (Keynote/Panel/Workshop/Retreat)."},
+  {id:"3-22",t:"SPEAKING §2: 4-topic 2×2 grid on white. Sandstone numeral + Forest topic title + body + ideal audience."},
+  {id:"3-23",t:"SPEAKING §3: Forest inquiry CTA. Left: copy + Sandstone button. Right: semi-transparent 'what to include' checklist."},
+  {id:"3-24",crit:true,t:"CONTACT §1: Two-column on white. Left: 'Start a Conversation.' headline + lead + contact table + speaking note. Right: Calendly inline embed."},
+  {id:"3-25",t:"Add SEO Page Title to every page: Pages > [Page] > Settings > SEO."},
+  {id:"3-26",t:"Add Meta Description to every page (140–160 chars, one keyword, clear reason to click)."},
+  {id:"3-27",t:"Upload professional photo to About Flavia. Filename: flavia-lemes-hr-advisor-bay-area.jpg. Add descriptive alt text."},
+  {id:"3-28",t:"Name ALL images descriptively before uploading. Add alt text to every image after upload."},
+]},
+{id:4,week:"Week 2 — Part C",dates:"May 21–22",color:"#8FA085",label:"Content — Articles",sum:"Write and publish two articles before QA. They need to be live to test the Insights page layout.",tasks:[
+  {id:"4-1",t:"Write Article 1 (600–900 words): 'Why Your HR Infrastructure Might Be Functional but Not Performing' — keyword: strategic HR advisory. End with CTA → /contact."},
+  {id:"4-2",t:"Write Article 2 (600–900 words): 'What Founders Get Wrong When Building Their First People Team' — keyword: fractional HR Bay Area. Same CTA."},
+  {id:"4-3",t:"Publish both articles with a featured image, correct tags, and a compelling meta description."},
+  {id:"4-4",t:"Verify both articles display correctly in the Insights page grid."},
+]},
+{id:5,week:"Week 3",dates:"May 22–24",color:"#3A3530",label:"Integration & QA",sum:"Do not skip any of these. A broken Calendly or mis-linked CTA on launch day is a direct revenue miss.",tasks:[
+  {id:"5-1",crit:true,t:"Embed Calendly on Contact page: edit Contact page → add Code Block → paste Calendly inline embed code → save. Set height so full calendar is visible."},
+  {id:"5-2",t:"Test-book a discovery call via Calendly on desktop. Confirm email arrives and appointment appears in your calendar."},
+  {id:"5-3",t:"Test-book on mobile. Confirm embed works on smaller screens."},
+  {id:"5-4",t:"Connect Google Analytics: Settings > Advanced > External Services > enter Measurement ID."},
+  {id:"5-5",t:"Click EVERY button and nav link on EVERY page. Verify every CTA goes to the correct destination."},
+  {id:"5-6",t:"Review every page on your phone in portrait. No text cut off, all sections readable."},
+  {id:"5-7",t:"Test footer email link flavia@fgladvisory.com — should open a mail client."},
+  {id:"5-8",t:"Test footer LinkedIn link — should open your profile."},
+  {id:"5-9",t:"Read every page aloud. Fix anything that sounds off before launch."},
+  {id:"5-10",t:"Confirm design: white/off-white backgrounds only, Forest green for CTAs and nav only, Ink #1C1A18 headings."},
+  {id:"5-11",t:"Confirm 'Schedule a Call' in nav is a styled button — not a plain text link."},
+  {id:"5-12",t:"Confirm footer: Ink background, correct 3-column layout on desktop."},
+  {id:"5-13",t:"Ask one trusted person matching your target client profile to review the site cold and attempt to book a call."},
+  {id:"5-14",t:"Set site to Private during QA: Settings > Site Availability > Private."},
+]},
+{id:6,week:"May 25",dates:"Launch Day",color:"#4A5E42",label:"Go Live",sum:"Do these in order. Do not skip the sitemap — it starts your Google indexing clock.",tasks:[
+  {id:"6-1",crit:true,t:"Set site to Public: Settings > Site Availability > Public."},
+  {id:"6-2",t:"Load fgladvisory.com in a fresh browser tab not logged into Squarespace. Verify it loads correctly."},
+  {id:"6-3",crit:true,t:"Submit sitemap to Google Search Console: fgladvisory.com/sitemap.xml."},
+  {id:"6-4",t:"Publish LinkedIn launch announcement from FGL Advisory Group company page."},
+  {id:"6-5",t:"Add fgladvisory.com to your personal LinkedIn profile URL section."},
+  {id:"6-6",t:"Update email signature with live website link."},
+  {id:"6-7",t:"Send personal outreach to your top 10 warmest contacts — individual messages, not a mass email."},
+]},
+{id:7,week:"Post-Launch",dates:"First 30 Days",color:"#6B6158",label:"Momentum & Optimization",sum:"The website is a living asset. These actions compound over time.",tasks:[
+  {id:"7-1",t:"Set up Google Business Profile at business.google.com — Category: Business Consultant. Service area: East Bay, San Francisco Bay Area, CA."},
+  {id:"7-2",t:"Review Google Analytics weekly: top pages, CTA conversion to Contact, average session duration."},
+  {id:"7-3",t:"Publish Article 3 within two weeks of launch — repurpose as LinkedIn post within 48 hours."},
+  {id:"7-4",t:"Maintain two-article-per-month cadence on Insights page."},
+  {id:"7-5",t:"After 30 days: test Sandstone #D4B896 CTA button color as variant if 'Schedule a Call' conversion is below expectations."},
+  {id:"7-6",t:"After 30 days: request first Google review from a satisfied contact or professional reference."},
+  {id:"7-7",t:"After 60 days: add Testimonials section to Home page once you have 2–3 real quotes."},
+]},
+];
+
+const total=phases.reduce((a,p)=>a+p.tasks.length,0);
+const CIRC=131.95;
+
+function save(){try{localStorage.setItem(SKEY,JSON.stringify(state));}catch(e){}}
+function done(){return Object.values(state).filter(Boolean).length;}
+
+function refreshProgress(){
+  const d=done(),pct=Math.round((d/total)*100);
+  document.getElementById('rFill').setAttribute('stroke-dashoffset',CIRC-(pct/100)*CIRC);
+  document.getElementById('rTxt').textContent=pct+'%';
+  document.getElementById('rTxt').setAttribute('fill',pct===100?'#4A5E42':'#E8E0D4');
+  document.getElementById('pFill').style.width=pct+'%';
+  document.getElementById('pTitle').textContent=pct===100?'All tasks complete. Ready to go live.':'Launch Progress';
+  document.getElementById('pSub').textContent=d+' of '+total+' tasks completed across '+phases.length+' phases';
+}
+
+function refreshPhaseBar(pid){
+  const ph=phases.find(p=>p.id===pid);
+  const d=ph.tasks.filter(t=>state[t.id]).length;
+  const pct=Math.round((d/ph.tasks.length)*100);
+  const bf=document.getElementById('bf-'+pid),bc=document.getElementById('bc-'+pid);
+  if(bf)bf.style.width=pct+'%';
+  if(bc){bc.textContent=d+'/'+ph.tasks.length;bc.style.color=d===ph.tasks.length?'#8FA085':'#6B6158';}
+}
+
+function toggleTask(tid,pid){
+  state[tid]=!state[tid];save();
+  const row=document.getElementById('tr-'+tid);
+  const cb=document.getElementById('cb-'+tid);
+  const tx=document.getElementById('tx-'+tid);
+  row.classList.toggle('done',!!state[tid]);
+  cb.classList.toggle('on',!!state[tid]);
+  tx.classList.toggle('done',!!state[tid]);
+  refreshProgress();refreshPhaseBar(pid);
+}
+
+function togglePhase(pid){
+  const was=openPhase===pid;
+  openPhase=was?null:pid;
+  phases.forEach(p=>{
+    const tl=document.getElementById('tl-'+p.id);
+    const pb=document.getElementById('pb-'+p.id);
+    const ar=document.getElementById('ar-'+p.id);
+    if(!tl)return;
+    const isOpen=p.id===openPhase;
+    tl.classList.toggle('open',isOpen);
+    pb.classList.toggle('open',isOpen);
+    ar.textContent=isOpen?'▲':'▼';
+  });
+}
+
+function build(){
+  const wrap=document.getElementById('phaseWrap');
+  wrap.innerHTML='';
+  phases.forEach(ph=>{
+    const d=ph.tasks.filter(t=>state[t.id]).length;
+    const pct=Math.round((d/ph.tasks.length)*100);
+    const isOpen=openPhase===ph.id;
+    const div=document.createElement('div');
+    div.className='phase';
+    div.innerHTML=
+      `<button class="ph-btn${isOpen?' open':''}" id="pb-${ph.id}" onclick="togglePhase(${ph.id})">
+        <div class="ph-num" style="background:${ph.color}"><span>${ph.id}</span></div>
+        <div class="ph-meta">
+          <div style="display:flex;align-items:baseline;gap:7px">
+            <span class="ph-label">${ph.label}</span>
+            <span class="ph-dates">${ph.week} · ${ph.dates}</span>
+          </div>
+          <div class="ph-sum">${ph.sum}</div>
+        </div>
+        <div class="ph-right">
+          <span class="ph-ct" id="bc-${ph.id}" style="color:${d===ph.tasks.length?'#8FA085':'#6B6158'}">${d}/${ph.tasks.length}</span>
+          <div class="ph-bar"><div class="ph-bfill" id="bf-${ph.id}" style="width:${pct}%;background:${ph.color}"></div></div>
+          <span class="ph-arr" id="ar-${ph.id}">${isOpen?'▲':'▼'}</span>
+        </div>
+      </button>
+      <div class="task-list${isOpen?' open':''}" id="tl-${ph.id}">
+        ${ph.tasks.map(task=>`
+          <div class="task-row${state[task.id]?' done':''}" id="tr-${task.id}" onclick="toggleTask('${task.id}',${ph.id})">
+            <div class="cb${state[task.id]?' on':''}" id="cb-${task.id}"><span class="ck">✓</span></div>
+            <div class="task-txt${state[task.id]?' done':''}" id="tx-${task.id}">
+              ${task.crit&&!state[task.id]?'<span class="crit">CRITICAL</span>':''}${task.t}
+            </div>
+          </div>`).join('')}
+      </div>`;
+    wrap.appendChild(div);
+  });
+  refreshProgress();
+}
+
+function showTab(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('panel-'+id).classList.add('on');
+  btn.classList.add('on');
+}
+
+build();
+</script>
+</body>
+</html>
